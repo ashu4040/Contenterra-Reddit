@@ -1,9 +1,8 @@
 // server.js
 const express = require("express");
-const cors = require("cors"); // Import cors
+const cors = require("cors");
 const app = express();
 
-// Enable CORS
 app.use(cors());
 
 app.get("/api/reddit", async (req, res) => {
@@ -14,12 +13,18 @@ app.get("/api/reddit", async (req, res) => {
       },
     });
 
+    if (!response.ok) {
+      return res
+        .status(response.status)
+        .json({ error: `Reddit responded with status ${response.status}` });
+    }
+
     const data = await response.json();
     res.json(data);
   } catch (err) {
-    console.error(err); // log actual error
+    console.error(err);
     res.status(500).json({ error: "Failed to fetch Reddit data" });
   }
 });
 
-app.listen(5000, () => console.log("Server running on port 5000"));
+app.listen(process.env.PORT || 5000, () => console.log("Server running"));
