@@ -1,28 +1,44 @@
-// server.js
-const express = require("express");
-const cors = require("cors");
+import express from "express";
+import cors from "cors";
 
 const app = express();
 app.use(cors());
 
+// Reddit OAuth credentials
+const CLIENT_ID = "EjPzx7j9HdxIts86B6CV9A";
+const CLIENT_SECRET = "NnHhNvMyd_qyLQD5I6g4eGKLSV8B5w";
+const REDDIT_USER_AGENT = "node:reddit.fetcher:v1.0 (by /u/ak433778)";
+
+// Function to get OAuth token
+async function getToken() {
+  const basicAuth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString(
+    "base64"
+  );
+
+  const response = await fetch("https://www.reddit.com/api/v1/access_token", {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${basicAuth}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: "grant_type=client_credentials",
+  });
+
+  const data = await response.json();
+  return data.access_token;
+}
+
+// Route to fetch Reddit posts
 app.get("/api/reddit", async (req, res) => {
   try {
-    const redditURL = encodeURIComponent(
-      "https://www.reddit.com/r/reactjs.json"
-    );
-    const proxyURL = `https://thingproxy.freeboard.io/fetch/${redditURL}`;
+    const token = await getToken();
 
-    const response = await fetch(proxyURL, {
+    const response = await fetch("https://oauth.reddit.com/r/reactjs/hot", {
       headers: {
-        "User-Agent": "node:reddit.fetcher:v1.0 (by /u/ak433778)",
+        Authorization: `Bearer ${token}`,
+        "User-Agent": REDDIT_USER_AGENT,
       },
     });
-
-    if (!response.ok) {
-      return res
-        .status(response.status)
-        .json({ error: `Proxy responded with status ${response.status}` });
-    }
 
     const data = await response.json();
     res.json(data);
@@ -32,5 +48,6 @@ app.get("/api/reddit", async (req, res) => {
   }
 });
 
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
