@@ -5,12 +5,10 @@ const App = () => {
   const [darkMode, setDarkMode] = useState(true); // default dark mode
 
   useEffect(() => {
-    fetch("https://www.reddit.com/r/reactjs.json")
+    fetch("http://localhost:5000/api/reddit")
       .then((res) => res.json())
-      .then((data) => {
-        setPosts(data.data.children);
-      })
-      .catch((err) => console.error(err));
+      .then((data) => setPosts(data.data.children))
+      .catch((err) => console.log(err));
   }, []);
 
   return (
