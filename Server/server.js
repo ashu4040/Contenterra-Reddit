@@ -1,25 +1,28 @@
 // server.js
 const express = require("express");
 const cors = require("cors");
-const app = express();
 
+const app = express();
 app.use(cors());
 
 app.get("/api/reddit", async (req, res) => {
   try {
-    const response = await fetch("https://www.reddit.com/r/reactjs.json", {
-      headers: {
-        "User-Agent": "node:reddit.fetcher:v1.0 (by /u/ak433778)",
-      },
-    });
+    const redditURL = encodeURIComponent(
+      "https://www.reddit.com/r/reactjs.json"
+    );
+    const proxyURL = `https://api.allorigins.win/get?url=${redditURL}`;
 
+    const response = await fetch(proxyURL);
     if (!response.ok) {
       return res
         .status(response.status)
-        .json({ error: `Reddit responded with status ${response.status}` });
+        .json({ error: `Proxy responded with status ${response.status}` });
     }
 
-    const data = await response.json();
+    const textData = await response.json();
+    // AllOrigins wraps the original response in 'contents'
+    const data = JSON.parse(textData.contents);
+
     res.json(data);
   } catch (err) {
     console.error(err);
@@ -27,4 +30,6 @@ app.get("/api/reddit", async (req, res) => {
   }
 });
 
-app.listen(process.env.PORT || 5000, () => console.log("Server running"));
+// Use dynamic port for Render
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
