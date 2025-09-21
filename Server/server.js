@@ -1,5 +1,7 @@
-import express from "express";
-import cors from "cors";
+// server.js (CommonJS)
+const express = require("express");
+const fetch = require("node-fetch");
+const cors = require("cors");
 
 const app = express();
 app.use(cors());
@@ -48,6 +50,5 @@ app.get("/api/reddit", async (req, res) => {
   }
 });
 
-// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
