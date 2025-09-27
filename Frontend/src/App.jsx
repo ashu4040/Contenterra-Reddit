@@ -7,7 +7,18 @@ const App = () => {
   useEffect(() => {
     fetch("https://contenterra-reddit-2.onrender.com/api/reddit")
       .then((res) => res.json())
-      .then((data) => setPosts(data.data.children))
+      .then((data) => {
+        // Map only the content you need
+        const cleanedPosts = data.data.children.map((post) => ({
+          title: post.data.title,
+          selftext: post.data.selftext,
+          url: post.data.url,
+          score: post.data.score,
+          author: post.data.author,
+          created_utc: post.data.created_utc,
+        }));
+        setPosts(cleanedPosts);
+      })
       .catch((err) => console.log(err));
   }, []);
 
@@ -47,35 +58,35 @@ const App = () => {
               darkMode
                 ? "bg-gray-800 border-gray-700 text-gray-100"
                 : "bg-white border-gray-300 text-gray-900"
-            } 
-                       flex flex-col justify-between flex-1 min-w-[300px] max-w-[380px] rounded-xl p-6 shadow-lg hover:shadow-blue-500/20 transition-all duration-300 overflow-hidden break-words border`}
+            } flex flex-col justify-between flex-1 min-w-[300px] max-w-[380px] rounded-xl p-6 shadow-lg hover:shadow-blue-500/20 transition-all duration-300 overflow-hidden break-words border`}
           >
-            {/* Top Section */}
             <div>
               <h2
                 className={`${
                   darkMode ? "hover:text-blue-400" : "hover:text-blue-600"
                 } text-lg font-semibold mb-3 leading-snug transition-colors duration-200`}
               >
-                {post.data.title}
+                {post.title}
               </h2>
 
-              <div
-                dangerouslySetInnerHTML={{ __html: post.data.selftext_html }}
-                className={`${
-                  darkMode ? "text-gray-300" : "text-gray-700"
-                } text-sm mb-4 break-words max-h-48 overflow-y-auto pr-2 custom-scrollbar`}
-              />
+              {post.selftext && (
+                <p
+                  className={`${
+                    darkMode ? "text-gray-300" : "text-gray-700"
+                  } text-sm mb-4 break-words max-h-48 overflow-y-auto pr-2 custom-scrollbar`}
+                >
+                  {post.selftext}
+                </p>
+              )}
             </div>
 
-            {/* Bottom Section */}
             <div
               className={`${
                 darkMode ? "border-gray-700" : "border-gray-300"
               } border-t pt-3`}
             >
               <a
-                href={post.data.url}
+                href={post.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`${
@@ -96,8 +107,9 @@ const App = () => {
                     darkMode ? "text-gray-200" : "text-gray-700"
                   } font-semibold`}
                 >
-                  {post.data.score}
-                </span>
+                  {post.score}
+                </span>{" "}
+                | 👤 Author: {post.author}
               </p>
             </div>
           </div>
